@@ -1,3 +1,3 @@
-# HWScripts
+# HW
 
-Repository containing scripts I've created for HW assignments while at Princeton.
+Repository containing scripts and functions I've created for HW assignments while at Princeton.

@@ -68,6 +68,8 @@ if nargout==0
     grid on
     % Title it with the measure of Gaussiness
     title(sprintf('%i convolutions, %s = %8.6f',N,'\Phi',pphi))
+    xlabel('arbitrary x');
+    ylabel('arbitrary y');
     legend([p1 p2 p3 p4],{'convolved pdf','expectation',...
         '1 std','normalized pdf'})
     

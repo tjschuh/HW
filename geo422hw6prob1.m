@@ -23,17 +23,6 @@ defval('amp',7);
 defval('xshift',0);
 defval('yshift',1);
 
-%only use this section if I decide to use more complex function
-%w1 = 13*pi/16;
-%w2 = 15*pi/16;
-%if w1 > w2
-%    w = w1;
-%elseif w1 < w2
-%    w = w2;
-%else
-%    w = w1;
-%end
-
 %other variables needed
 xmax = 19; %upper bound of samples
 hpsrate = 0.1; %high precision sampling rate
@@ -45,42 +34,50 @@ deltax = 1/(2*Nrate);
 %plot the true function using high precision
 x = 0:hpsrate:xmax;
 y = amp*sin(w*x - xshift) + yshift;
-%y = sin(w1*x).*cos(w2*x);
 subplot(4,2,1)
 plot(x,y)
 title('True Plot of Function')
+xlabel('arbitrary x units')
+ylabel('arbitrary y units')
 subplot(4,2,2)
 periodogram(y)
+ylabel({'Power/frequency','(dB/(rad/sample))'})
 
 %plot using the Nyquist rate
 srate = deltax; %Nrate goes as 1/srate
 x = 0:srate:xmax;
 y = amp*sin(w*x - xshift) + yshift;
-%y = sin(w1*x).*cos(w2*x);
 subplot(4,2,3)
 plot(x,y)
 title('Sampling Rate = Nyquist Rate')
+xlabel('arbitrary x units')
+ylabel('arbitrary y units')
 subplot(4,2,4)
 periodogram(y)
+ylabel({'Power/frequency','(dB/(rad/sample))'})
 
 %plot using a larger Nyquist rate (should still work)
 srate = deltax - (0.5*deltax); %Nrate goes as 1/srate
 x = 0:srate:xmax;
 y = amp*sin(w*x - xshift) + yshift;
-%y = sin(w1*x).*cos(w2*x);
 subplot(4,2,5)
 plot(x,y)
 title('Sampling Rate > Nyquist Rate')
+xlabel('arbitrary x units')
+ylabel('arbitrary y units')
 subplot(4,2,6)
 periodogram(y)
+ylabel({'Power/frequency','(dB/(rad/sample))'})
 
 %plot using a smaller Nyquist rate (should blow-up)
 srate = deltax + (0.5*deltax); %Nrate goes as 1/srate
 x = 0:srate:xmax;
 y = amp*sin(w*x - xshift) + yshift;
-%y = sin(w1*x).*cos(w2*x);
 subplot(4,2,7)
 plot(x,y)
 title('Sampling Rate < Nyquist Rate')
+xlabel('arbitrary x units')
+ylabel('arbitrary y units')
 subplot(4,2,8)
 periodogram(y)
+ylabel({'Power/frequency','(dB/(rad/sample))'})

@@ -2,6 +2,10 @@
 %
 % Written by tschuh@princeton.edu, 10/31/2020
 
+% If given xcom.mat, ycom.mat, and time.mat
+% load them in before running code using "load('filename')"
+% otherwise, run the code and create them manually
+
 % Defining some parameters
 
 %1 frame = 0.04 seconds
@@ -35,7 +39,7 @@ end
    ycom = pix.*ycom;
    time = frame.*time;
 else
-   %xcom and ycom already exist, load them in
+   %xcom, ycom, and time already exist
 end
 
 %this is just to visualize the data

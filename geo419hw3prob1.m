@@ -14,8 +14,8 @@ MV = x1*M1 + x2*M2;
 MR = 1./((x1/M1) + (x2/M2));
 
 plot(x1,MV,'b')
-xlabel('x_1')
-ylabel('M_V, M_R')
+xlabel('x_1 volume fraction')
+ylabel('M_V [GPa], M_R [GPa]')
 ax1=gca;
 hold on
 plot(x1,MR,'r')
@@ -29,4 +29,4 @@ OppTickLabelsX = {'1' '0.9' '0.8' '0.7' '0.6' '0.5' '0.4' '0.3' '0.2' '0.1' '0'}
 OppTickLabelsY = {'10' '20' '30' '40' '50' '60' '70' '80' '90' '100'};
 % Set the x-tick and y-tick  labels for the second axes
 set(ax2, 'XTickLabel', OppTickLabelsX,'YTickLabel',OppTickLabelsY);
-xlabel('x_2')
+xlabel('x_2 volume fraction')

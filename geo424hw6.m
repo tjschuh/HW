@@ -1,4 +1,7 @@
 % This is a script to plot the graphs requested in HW 6
+% Written by tschuh@princeton.edu, 3/16/2021
+
+% Problem 2
 
 % height [km]
 H = 35;
@@ -54,15 +57,18 @@ for i = 1:size(T,2)
   hold on
   scatter(c(intersect(i)),RHS(intersect(i)),75,'*','k')
   hold on
-  scatter([c(c1) c(c2) c(c3) c(c4) c(c5) c(c6)],[RHS(c1) RHS(c2) RHS(c3) RHS(c4) RHS(c5) RHS(c6)],'filled','^','b')
+  scatter([c(c1) c(c2) c(c3) c(c4) c(c5) c(c6)],...
+	  [RHS(c1) RHS(c2) RHS(c3) RHS(c4) RHS(c5) RHS(c6)],'filled','^','b')
   hold on
-  scatter([c(c1) c(c2) c(c3) c(c4) c(c5) c(c6)],[LHS(c1) LHS(c2) LHS(c3) LHS(c4) LHS(c5) LHS(c6)],'filled','^','r')
+  scatter([c(c1) c(c2) c(c3) c(c4) c(c5) c(c6)],...
+	  [LHS(c1) LHS(c2) LHS(c3) LHS(c4) LHS(c5) LHS(c6)],'filled','^','r')
   hold on
   if i == 1 %draw asymptote
     xline(4.0415,'--k');
   end
   grid on
-  title({['RHS and LHS values as a fucntion of phase velocity{\it c}'];['T = ' num2str(T(i)) ' sec']})
+  title({['RHS and LHS values as a fucntion of phase velocity{\it c}'];...
+	['T = ' num2str(T(i)) ' sec']})
   legend('RHS','LHS')
   xlabel('phase velocity{\it c} [km/s]')
   ylabel('RHS and LHS values')
@@ -74,7 +80,7 @@ for i = 1:size(T,2)
   end
 end
 
-% number 3
+% Problem 3
 
 for m = 1:4      
   cT(m) = c(intersect(m));

@@ -21,7 +21,6 @@ grid on
 
 % Problem 2
 
-
 % period [s]
 T = [20.08 30.12 40.96 51.20];
 

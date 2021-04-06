@@ -15,12 +15,15 @@ R = 6371e3;
 
 r = linspace(0,R,10000);
 
-Pc = 2*pi*G*(((rhoc^2)/3) - r.*((7*rhoc*(rhoc-rho0))/(18*R)) + ...
+% pressure as a function of radius
+P = 2*pi*G*(((rhoc^2)/3) - r.*((7*rhoc*(rhoc-rho0))/(18*R)) + ...
     (r.^2).*(((rhoc-rho0)^2))/(8*(R^2))).*(r.^2);
 
+% acceleration due to gravity as a function of radius
 g = 4*pi*G*((rhoc/3) - r.*((rhoc-rho0)/(4*R))).*r;
 
-plot(r,Pc)
+% plotting
+plot(r,P)
 title('Pressure vs. Depth Below Earth''s Surface')
 xlabel('Depth [km]')
 ylabel('Pressure [GPa]')

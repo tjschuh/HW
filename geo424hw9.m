@@ -23,10 +23,7 @@ iscp = ISC_data(:,3);
 % Parts 1 & 2
 
 % computed ray parameter p, p = dT/d(delta)
-for i = 2:size(T,1)
-    p(i-1) = (T(i)-T(i-1))/(deltar(i)-deltar(i-1));
-end
-p = p';
+p = diff(T)./diff(deltar);
 
 figure
 plot(deltar,T,'LineWidth',1.5)

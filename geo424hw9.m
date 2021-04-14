@@ -5,6 +5,9 @@
 % load in ISC data that is given
 load ISC_data
 
+% load in jeffrey's model that is given
+load jmodel
+
 % distance in degrees up to 24
 deltad = ISC_data(:,1);
 
@@ -14,52 +17,71 @@ deltar = (pi/180)*deltad;
 % travel times in seconds
 T = ISC_data(:,2);
 
-% computer ray parameter p, p = dT/d(delta)
+% ISC ray parameter given
+iscp = ISC_data(:,3);
+
+% Parts 1 & 2
+
+% computed ray parameter p, p = dT/d(delta)
 for i = 2:size(T,1)
     p(i-1) = (T(i)-T(i-1))/(deltar(i)-deltar(i-1));
 end
 p = p';
 
 figure
-plot(deltar,T)
-xlabel('distance{\it \Delta} [radians]')
-ylabel('travel time{\it T} [s]')
+plot(deltar,T,'LineWidth',1.5)
+title('Travel Time{\it T} as a function of Distance{\it \Delta}')
+xlabel('Distance{\it \Delta} [radians]')
+ylabel('Travel Time{\it T} [s]')
 grid on
 
 figure
-plot(deltar(2:end),p)
-xlabel('distance{\it \Delta} [radians]')
-ylabel('ray parameter{\it p}')
+plot(deltar(2:end),p,'LineWidth',1.5)
+hold on
+plot(deltar,iscp,'LineWidth',1.5)
+title('Ray Parameter{\it p} as a function of Distance{\it \Delta}')
+xlim([-0.1 1.8])
+xlabel('Distance{\it \Delta} [radians]')
+ylabel('Ray Parameter{\it p}')
+legend('Calculated Ray Paramter','ISC Ray Parameter')
 grid on
 
+% Parts 3, 4, & 5
+  
 % radius of earth [km]
 r0 = 6371;
-dx = 2;
-eta = p;
-counter = 1;
 
-for L = 0:2:96
-  if L == 0
-    r(counter,1) = r0;
-    counter = counter + 1;
-  else
-    N = (L/dx) + 1;
-    for j = 2:N
-      f1 = log(p(j-1,1)/eta(N,1) + ((p(j-1,1)/eta(N,1))^2 - 1)^(1/2));
-      f2 = log(p(j,1)/eta(N,1) + ((p(j,1)/eta(N,1))^2 - 1)^(1/2));
-      trap(j-1) = ((f1+f2)*dx)/2;
-    end
-    area = sum(trap);
-    r(counter,1) = r0*exp((-1/pi)*area);
-    counter = counter + 1;
+dxd = 2;
+dxr = 2*(pi/180);
+eta = p;
+counter = 2;
+
+% special case for L = 0
+r(1,1) = r0;
+
+% calculating radius using p and the trapezoidal integral method
+for L = 2:dxd:96
+  N = (L/dxd) + 1;
+  for j = 2:N
+    f1 = log(p(j-1,1)/eta(N,1) + ((p(j-1,1)/eta(N,1))^2 - 1)^(1/2));
+    f2 = log(p(j,1)/eta(N,1) + ((p(j,1)/eta(N,1))^2 - 1)^(1/2));
+    trap(j-1) = ((f1+f2)*dxr)/2;
   end
+  area = sum(trap);
+  r(counter,1) = r0*exp((-1/pi)*area);
+  counter = counter + 1;
 end
 
 % velocity v [km/s] --> r [km], eta [s]
 v = r./eta;
 
 figure
-plot(r,v)
+plot(v,r,'LineWidth',1.5)
+hold on
+plot(jmodel(1:22,2),r0-jmodel(1:22,1),'LineWidth',1.5)
+title('P-Wave Velocity{\it v_p} as a function of Radius{\it r}')
+ylim([3400 6500])
+xlabel('P-Wave Velocity{\it v_p} [km/s]')
+ylabel('Radius{\it r} [km]')
+legend('Calculated P-Wave Velocity','Jeffrey''s Model')
 grid on
-xlabel('radius{\it r} [km]')
-ylabel('velocity{\it v} [km/s]')

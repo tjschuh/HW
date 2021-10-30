@@ -26,7 +26,7 @@ x2 = x1(1:N);
 % compute the NxN c matrix
 for i=1:N                                                             
     for j=1:N                                                             
-        c(i,j) = 1/(N*(((2*d*(j-i))/l) - (1/N))*(((2*d*(j-i))/l) + (1/N)));
+        c(i,j) = 1/(pi*N*(((2*d*(j-i))/l) - (1/N))*(((2*d*(j-i))/l) + (1/N)));
     end
 end
 

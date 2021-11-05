@@ -26,10 +26,12 @@ m = (a-b)/(a+b);
 R = (a+b)/2;
 
 %x1 = linspace(a,a+9,100);
-x1 = a:0.01:a+9;
+%x1 = a:0.001:a+9;
+x1 = logspace(0,.5,100);
 
 % these are the solutions for positive x 
 zeta1 = (x1 - sqrt((x1.^2) - 4*(R^2)))/(2*R);
+%zeta1 = linspace(0,a,100);
 
 sigxx1 = (-2.*m)./(m - zeta1.^(-2)) ...
          - (2.*m.*(zeta1.^(-4) + m.*zeta1.^(-2)))./((m - zeta1.^(-2)).^3) ...
@@ -40,7 +42,8 @@ sigyy1 = (-2.*m)./(m - zeta1.^(-2)) ...
          - ((1 + m^2).*(1 + m.*zeta1.^2))./(((1 - m.*zeta1.^2).^2).*(m - zeta1.^(-2)));
 
 %x2 = linspace(-a,-a-9,100);
-x2 = -a:-0.01:-(a+9);
+%x2 = -a:-0.01:-(a+9);
+x2 = logspace(log(.1*a),log(.1*(a+9)),100);
 
 % these are the solutions for negative x
 zeta2 = (x2 + sqrt((x2.^2) - 4*(R^2)))/(2*R);
@@ -58,33 +61,35 @@ sigxx = [sigxx2 sigxx1];
 sigyy = [sigyy2 sigyy1];
 
 % plotting
-subplot(2,2,1)
-scatter(x,sigxx,'filled','r')
-grid on
-longticks
-xlabel('x')
-ylabel('sigma_{xx}')
-subplot(2,2,2)
-scatter(x,sigyy,'filled','b')
-grid on
-longticks
-xlabel('x')
-ylabel('sigma_{yy}')
+%figure
+%subplot(2,1,1)
+%scatter(x,sigxx,'filled','r')
+%grid on
+%longticks
+%xlabel('x')
+%ylabel('sigma_{xx}')
+%subplot(2,1,2)
+%scatter(x,sigyy,'filled','b')
+%grid on
+%longticks
+%xlabel('x')
+%ylabel('sigma_{yy}')
 
 % only plotting x1 and sigxx1/sigyy1 to match plot from notes
-subplot(2,2,3)
-scatter(log((x1-a)/a),log(sigxx1),'filled')
+figure
+%subplot(2,1,1)
+scatter(log((x1-a)/a),log(abs(sigxx1)),'filled')
 hold on
-plot(log((x1-a)/a),log(sigxx1))
+%plot(log((x1-a)/a),log(abs(sigxx1)))
 grid on
 longticks
 xlabel('log(x-a/a)')
-ylabel('log(sigma_{xx})')
-subplot(2,2,4)
-scatter(log((x1-a)/a),log(sigyy1),'filled')
-hold on
-plot(log((x1-a)/a),log(sigyy1))
+ylabel('log(sigma)')
+%subplot(2,1,2)
+scatter(log((x1-a)/a),log(abs(sigyy1)),'filled')
+%hold on
+%plot(log((x1-a)/a),log(abs(sigyy1)))
 grid on
 longticks
 xlabel('log(x-a/a)')
-ylabel('log(sigma_{yy})')
+ylabel('log(sigma)')

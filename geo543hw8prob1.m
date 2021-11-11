@@ -1,5 +1,5 @@
-function m=geo543hw8(a,b)
-% m=GEO543HW8(a,b)
+function m=geo543hw8prob1(a,b)
+% m=GEO543HW8PROB1(a,b)
 %
 % Plot sigmaxx and sigmayy vs x on normal scale and log-log scale
 %
@@ -69,4 +69,5 @@ scatter(log(y),log(abs(sigyy1)),'r','filled')
 grid on
 longticks
 xlabel('log(x-a/a)')
-ylabel('log(sigma)')
+ylabel('log(\sigma/P)')
+title(sprintf('m = %d',m))

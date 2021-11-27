@@ -1,5 +1,6 @@
 function geo543hw9(N)
 
+% Base Parameters
 defval('N',100)
 l = 1;
     
@@ -10,7 +11,7 @@ B = ones(N,1);
 for i=1:N
     for j=1:N
         x2 = 2*d*(j-i);
-        c = 1 / (((x2 / l) + (1 / N)) * ((x2 / l) - (1 / N)));
+        c = 1/(((x2/l) + (1/N))*((x2/l) - (1/N)));
         A(i,j) = (1/(N*pi))*c;
     end
 end
@@ -52,7 +53,7 @@ B = ones(N,1);
 for i=1:N
     for j=1:N
         x2 = 2*d*(j-i);
-        c = 1/(((x2/lprime) + (1/N)) * ((x2/lprime) - (1/N)));
+        c = 1/(((x2/lprime) + (1/N))*((x2/lprime) - (1/N)));
         A(i,j) = (1/(N*pi))*c;
     end
 end
@@ -64,8 +65,8 @@ us_sell = zeros(length(x1),1);
 for i=1:length(x1)
     for j = 1:N
         x2 = lprime - ((lprime/N)*(j - 0.5));
-        xplus = (x2 ./ lprime) + (d/lprime);
-        xminus = (x2 ./ lprime) - (d/lprime);
+        xplus = (x2./lprime) + (d/lprime);
+        xminus = (x2./lprime) - (d/lprime);
         u = (1/(2*pi))*(atan2(x1(i)./lprime,xplus) - atan2(x1(i)./lprime,xminus));
         s_ellipse = -1 + (sum(x(j:N))/N);
         usum(j) = u/s_ellipse;

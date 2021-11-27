@@ -1,7 +1,6 @@
-function geo543hw8prob3()
+function geo543hw8prob3(N)
 
 % calculate slip for the ellipse 
-N = 30;
 Nmid = round(N/2);
 slip = zeros(N,1);
 % Tau
@@ -39,7 +38,7 @@ for j = 1:N*100
     end
     %only using half the space 
     U3_ellispe(j) = U3acc_e*2;
-    U3_regular(j) = U3acc_r*2;
+    U3_rectangle(j) = U3acc_r*2;
     U3acc_e = 0;
     U3acc_r = 0;
     U3xe(j) = x1;
@@ -51,10 +50,11 @@ end
 plot(U3xe,U3_ellispe,'LineWidth',1.25);
 hold on
 plot(U3xes,U3_ellispe,'LineWidth',1.25);
-plot(U3xr,U3_regular,'LineWidth',1.25);
-legend('Scaled Ellispe','Regular','Ellispe');
-xlabel('Distance from Fault')
-ylabel('Surface Displacement')
+plot(U3xr,U3_rectangle,'LineWidth',1.25);
+legend('Scaled Ellispe','Rectangle','Ellispe');
+xlabel('Distance from Fault Trace (x1/l)')
+ylabel('Surface Displacement (mu/s)')
 xlim([0 0.6])
 ylim([0 0.6])
-longticks
+longticks([],2)
+grid on

@@ -1,19 +1,15 @@
-function geo441hw01()
-% GEO441()
+function geo441hw01(n)
+% GEO441(n)
 %
 % code for HW 1
 %
+% n       what problem do you want to run
+%         1 for problem 1a
+%         2 for problem 1b
+%         3 for problem 2
+%
 % Originally written by tschuh-at-princeton.edu, 02/02/2022
 % Last modified by tschuh-at-princeton.edu, 02/07/2022
-
-% Problem 1a
-n = 1;
-
-% Problem 1b
-n = 2;
-
-% Problem 2
-%n = 3;
 
 switch n
     case 1 % homogeneous, Dirichlet BCs
@@ -24,51 +20,59 @@ switch n
       dx = 0.1; dt = dx/c;
 
       % string length and max time
-      xmax = 100; tmax = 100;
+      xmax = 100; tmax = 2500;
 
       % create actual string
       x = [0:dx:xmax];
       
-      % allocate displacment grid
-      u = zeros(tmax/dt,xmax/dx+1);
+      % only ever need 3 rows
+      % previous timestep --> current timestep --> future timestep
+      u = zeros(3,xmax/dx+1);
 
-      % IC
-      % compute displacement values for first row aka t = 0
+      % define each row of displacement grid
+      old = 1; cur = 2; new = 3;
+      
+      % IC: compute displacement values for t = 0
       for i=1:size(u,2)
-          u(1,i) = exp(-0.1*(((i-1)/10) - 50)^2);
+          u(cur,i) = exp(-0.1*(((i-1)/10) - 50)^2);
       end
+
+      % displacements for t = -1 are equal to t = 0 values
+      % need this for 1st timestep
+      u(old,:) = u(cur,:);
       
       % Dirichlet BCs (fixed ends)
-      u(:,1) = 0;
-      u(:,end) = 0;
+      u(:,1) = 0; u(:,end) = 0;
 
-      % compute future times aka subsequent rows by using equation from class
-      for j=1:size(u,1)-1
-          for k=2:size(u,2)-1
-              % for row 2 (t = 1), j - 1 term is the same as the j term
-              if j == 1
-                  u(j+1,k) = ((c*dt/dx)^2)*(u(j,k+1) - 2*u(j,k) + u(j,k-1)) + 2*u(j,k) - u(j,k);
-              % for every following timestep, actually use j - 1 term    
-              else
-                  u(j+1,k) = ((c*dt/dx)^2)*(u(j,k+1) - 2*u(j,k) + u(j,k-1)) + 2*u(j,k) - u(j-1,k);
-              end
-          end
-      end
-
-      % turn plots into movie
-      % this is slow, can play with frame rate and plotting interval
+      % plot t = 0 displacements
       f=figure;
       f.Visible = 'off';
       counter = 1;
-      int = 10;
-      frate = 10;
-      for m = 1:int:size(u,1)
-          plot(x,u(m,:),'LineWidth',2)
-          ylim([-1 1])
-          drawnow
-          M(counter) = getframe;
-          counter = counter + 1;
+      pint = 25;
+      frate = 6;      
+      plot(x,u(cur,:),'LineWidth',2)
+      ylim([-1 1])
+      M(counter) = getframe;
+      counter = counter + 1;
+      
+      % compute future times aka "new" row by using equation from class
+      for j=1:tmax
+          for k=2:size(u,2)-1
+              u(new,k) = ((c*dt/dx)^2)*(u(cur,k+1) - 2*u(cur,k) + u(cur,k-1)) + 2*u(cur,k) - u(old,k);
+          end
+          % after computing new displacements
+          % current disps become old disps and new disps become cur disps
+          u(old,:) = u(cur,:); u(cur,:) = u(new,:);
+          % make movie and only plot every pint frame
+          if mod(j,pint+1) == 1
+              plot(x,u(cur,:),'LineWidth',2)
+              ylim([-1 1])
+              M(counter) = getframe;
+              counter = counter + 1;
+          end
       end
+
+      % play movie
       f.Visible = 'on';
       movie(M,1,frate);
 

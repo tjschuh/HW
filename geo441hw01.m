@@ -9,7 +9,7 @@ function geo441hw01(n)
 %         3 for problem 2
 %
 % Originally written by tschuh-at-princeton.edu, 02/02/2022
-% Last modified by tschuh-at-princeton.edu, 02/07/2022
+% Last modified by tschuh-at-princeton.edu, 02/08/2022
 
 switch n
     case 1 % homogeneous, Dirichlet BCs
@@ -64,7 +64,7 @@ switch n
           % current disps become old disps and new disps become cur disps
           u(old,:) = u(cur,:); u(cur,:) = u(new,:);
           % make movie and only plot every pint frame
-          if mod(j,pint+1) == 1
+          if mod(j,pint-1) == 0
               plot(x,u(cur,:),'LineWidth',2)
               ylim([-1 1])
               M(counter) = getframe;
@@ -84,68 +84,78 @@ switch n
       dx = 0.1; dt = dx/c;
 
       % string length and max time
-      xmax = 100; tmax = 100;
+      xmax = 100; tmax = 2500;
 
       % create actual string
       x = [0:dx:xmax];
 
-      % allocate displacment array for first timestep only
-      u = zeros(1,xmax/dx+1);
-
-      % IC
-      % compute displacement values for first row aka t = 0
-      for i=1:size(u,2)
-          u(1,i) = exp(-0.1*(((i-1)/10) - 50)^2);
-      end
+      % allocate displacment array for t = 0 only
+      u = zeros(3,xmax/dx+1);
 
       % allocate velocity grid
       % we know that v(t=0) = 0
-      v = zeros(tmax/dt,xmax/dx+1);
+      v = zeros(3,xmax/dx+1);
 
       % allocate stress array
-      T = zeros(tmax/dt,xmax/dx+1);
+      T = zeros(3,xmax/dx+1);
 
-      % Neumann BCs (stress-free ends)
-      T(:,1) = 0;
-      T(:,end) = 0;
+      % define each row of displacement grid
+      old = 1; cur = 2; new = 3;
+
+      % IC: compute displacement values for t = 0 and t = -1
+      for i=1:size(u,2)
+          u(cur,i) = exp(-0.1*(((i-1)/10) - 50)^2);
+      end
+      u(old,:) = u(cur,:);
       
-      % now compute stress values for t = 0 using displacements at t=0
+      % compute displacment for t = 1
+      for k=2:size(u,2)-1
+          u(new,k) = ((c*dt/dx)^2)*(u(cur,k+1) - 2*u(cur,k) + u(cur,k-1)) + 2*u(cur,k) - u(old,k);
+      end
+      
+      % Neumann BCs (stress-free ends)
+      T(:,1) = 0; T(:,end) = 0;
+      
+      % now compute stress values for t=0 using displacements at t=0
       for i=2:size(T,2)-1
-          T(1,i) = (k/(2*dx))*(u(1,i+1) - u(1,i-1));
+          T(cur,i) = (k/(2*dx))*(u(cur,i+1) - u(cur,i-1));
+      end
+      T(old,:) = T(cur,:);
+      
+      % now compute velocity values for t=0 using displacements at t=-1 and t=1
+      for i=2:size(v,2)-1
+          v(cur,i) = (1/(2*dt))*(u(new,i) - u(old,i));
       end
 
-      keyboard
+      v(cur,1) = v(cur,2); v(cur,end) = v(cur,end-1);
+      v(old,:) = v(cur,:);
       
+      f=figure;
+      plot(x,T(cur,:),'b','LineWidth',2)
+      %plot(x,v(cur,:),'r','LineWidth',2)     
+      %ylim([-1 1])
+      hold on
+
       % now iterate to compute v and T for all timesteps
       % this is correct, but what are BCs on v (v(:,1) = v(:,end) = ???)
-      for i=1:size(v,1)-1
-          for j=2:size(T,2)-1
-              if i == 1
-                  v(i+1,j) = (dt/(p*dx))*(T(i,j+1) - T(i,j-1)) + v(i,j);
-                  T(i+1,j) = (k/(2*dx))*(v(i,j+1) - v(i,j-1)) + T(i,j);
-              else
-                  v(i+1,j) = (dt/(p*dx))*(T(i,j+1) - T(i,j-1)) + v(i-1,j);
-                  T(i+1,j) = (k/(2*dx))*(v(i,j+1) - v(i,j-1)) + T(i-1,j);
-              end
-          end
+      for i=1:20
+      for j=2:size(T,2)-1
+          v(new,j) = (dt/(p*dx))*(T(cur,j+1) - T(cur,j-1)) + v(old,j);
+          T(new,j) = (k/(2*dx))*(v(cur,j+1) - v(cur,j-1)) + T(old,j);
       end
 
+      v(cur,1) = v(cur,2); v(cur,end) = v(cur,end-1);
+      T(cur,1) = 0; T(cur,end) = 0;
+      v(old,:) = v(cur,:); v(cur,:) = v(new,:);
+      T(old,:) = T(cur,:); T(cur,:) = T(new,:);      
+      plot(x,T(cur,:),'b','LineWidth',2)
+          %plot(x,v(cur,:),'r','LineWidth',2)
+          %ylim([-1 1])
+      keyboard
+      end
+      
       %keyboard
       
-      % turn plots into movie
-      % this is slow, can play with frame rate and plotting interval
-      f=figure;
-      f.Visible = 'off';
-      counter = 1;
-      int = 10;
-      frate = 1;
-      for m = 1:int:size(v,1)
-          plot(x,T(m,:),'LineWidth',2)
-          ylim([-1 1])
-          drawnow
-          M(counter) = getframe;
-          counter = counter + 1;
-      end
       f.Visible = 'on';
       movie(M,1,frate);
                   

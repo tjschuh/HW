@@ -10,9 +10,10 @@ function geo441hw01()
 n = 1;
 
 % Problem 1b
+n = 2;
 
 % Problem 2
-n = 3;
+%n = 3;
 
 switch n
     case 1 % homogeneous, Dirichlet BCs
@@ -53,9 +54,27 @@ switch n
               end
           end
       end
+
+      % turn plots into movie
+      % this is slow, can play with frame rate and plotting interval
+      f=figure;
+      f.Visible = 'off';
+      counter = 1;
+      int = 10;
+      frate = 10;
+      for m = 1:int:size(u,1)
+          plot(x,u(m,:),'LineWidth',2)
+          ylim([-1 1])
+          drawnow
+          M(counter) = getframe;
+          counter = counter + 1;
+      end
+      f.Visible = 'on';
+      movie(M,1,frate);
+
     case 2 % homogeneous, Neumann BCs, velocity-stress formulation
-      % wave speed
-      c = 1;
+      % kappa, rho, and wave speed
+      k = 1; p = 1; c = 1;
 
       % grid size and timestep
       dx = 0.1; dt = dx/c;
@@ -75,8 +94,57 @@ switch n
           u(1,i) = exp(-0.1*(((i-1)/10) - 50)^2);
       end
 
-      % now compute stress values for t = 0
+      % allocate velocity grid
+      % we know that v(t=0) = 0
+      v = zeros(tmax/dt,xmax/dx+1);
+
+      % allocate stress array
+      T = zeros(tmax/dt,xmax/dx+1);
+
+      % Neumann BCs (stress-free ends)
+      T(:,1) = 0;
+      T(:,end) = 0;
       
+      % now compute stress values for t = 0 using displacements at t=0
+      for i=2:size(T,2)-1
+          T(1,i) = (k/(2*dx))*(u(1,i+1) - u(1,i-1));
+      end
+
+      keyboard
+      
+      % now iterate to compute v and T for all timesteps
+      % this is correct, but what are BCs on v (v(:,1) = v(:,end) = ???)
+      for i=1:size(v,1)-1
+          for j=2:size(T,2)-1
+              if i == 1
+                  v(i+1,j) = (dt/(p*dx))*(T(i,j+1) - T(i,j-1)) + v(i,j);
+                  T(i+1,j) = (k/(2*dx))*(v(i,j+1) - v(i,j-1)) + T(i,j);
+              else
+                  v(i+1,j) = (dt/(p*dx))*(T(i,j+1) - T(i,j-1)) + v(i-1,j);
+                  T(i+1,j) = (k/(2*dx))*(v(i,j+1) - v(i,j-1)) + T(i-1,j);
+              end
+          end
+      end
+
+      %keyboard
+      
+      % turn plots into movie
+      % this is slow, can play with frame rate and plotting interval
+      f=figure;
+      f.Visible = 'off';
+      counter = 1;
+      int = 10;
+      frate = 1;
+      for m = 1:int:size(v,1)
+          plot(x,T(m,:),'LineWidth',2)
+          ylim([-1 1])
+          drawnow
+          M(counter) = getframe;
+          counter = counter + 1;
+      end
+      f.Visible = 'on';
+      movie(M,1,frate);
+                  
     case 3 % heterogeneous, Dirichlet BCs NEED TO CHANGE TO Dirichlet at x=0 and Neumann at x=100
       % wave speed for [0 60] and (60 100]
       c1 = 1; c2 = 2;
@@ -131,27 +199,25 @@ switch n
                   end
               end
           end
-      end      
-end
+      end
 
-% turn plots into movie
-% this is slow, can play with frame rate and plotting interval
-f=figure;
-f.Visible = 'off';
-counter = 1;
-int = 10;
-frate = 10;
-for m = 1:int:size(u,1)
-    plot(x,u(m,:),'LineWidth',2)
-    if n == 2
-        xline(60,'--','LineWidth',2)
-        text(27,0.8,'c = 1')
-        text(77,0.8,'c = 2')
-    end
-    ylim([-1 1])
-    drawnow
-    M(counter) = getframe;
-    counter = counter + 1;
+      % turn plots into movie
+      % this is slow, can play with frame rate and plotting interval
+      f=figure;
+      f.Visible = 'off';
+      counter = 1;
+      int = 10;
+      frate = 10;
+      for m = 1:int:size(u,1)
+          plot(x,u(m,:),'LineWidth',2)
+          xline(60,'--','LineWidth',2)
+          text(27,0.8,'c = 1')
+          text(77,0.8,'c = 2')
+          ylim([-1 1])
+          drawnow
+          M(counter) = getframe;
+          counter = counter + 1;
+      end
+      f.Visible = 'on';
+      movie(M,1,frate);
 end
-f.Visible = 'on';
-movie(M,1,frate);

@@ -1,7 +1,7 @@
-function geo441hw01(n,p)
-% GEO441HW01(n,p)
+function geo441hw01(n,m)
+% GEO441HW01(n,m)
 %
-% code for HW 1, makes movies of an oscillating string
+% code for HW 1, makes and saves a movie of an oscillating string
 % with varying boundary conditions and material properties
 %
 % INPUT:
@@ -15,7 +15,7 @@ function geo441hw01(n,p)
 %
 % OUTPUT:
 %
-% movie of oscillating string for specific case    
+% .mp4 file of the movie
 %    
 % EXAMPLES:
 %
@@ -89,8 +89,8 @@ switch n
       hold off
       counter = counter + 1;
 
-      switch p
-          case 1 % homogeneous, Dirichlet BCs      
+      switch m
+          case 1 % Dirichlet BCs                  
             % Dirichlet BCs (fixed ends)
             u(:,1) = 0; u(:,end) = 0;
             v(:,1) = 0; v(:,end) = 0;
@@ -116,6 +116,7 @@ switch n
                     plot(x,v(cur,:),'b','LineWidth',2)
                     plot(x,T(cur,:),'r','LineWidth',2)
                     ylim([-1 1])
+                    title('Homogeneous, Dirichlet BCs')
                     legend('Displacement','Velocity','Stress')
                     grid on
                     M(counter) = getframe;
@@ -124,11 +125,16 @@ switch n
                 end
             end
 
-            % play movie
+            % play and save movie
             f.Visible = 'on';
+            v = VideoWriter('1a','MPEG-4');
+            v.FrameRate = frate;
+            open(v)
             movie(M,2,frate);
+            writeVideo(v,M)
+            close(v)
 
-          case 2 % homogeneous, Neumann BCs
+          case 2 % Neumann BCs
             % Neumann BCs (stress-free ends)
             T(:,1) = 0; T(:,end) = 0;
           
@@ -153,6 +159,7 @@ switch n
                     plot(x,T(cur,:),'r','LineWidth',2)
                     ylim([-1 1])
                     legend('Displacement','Velocity','Stress')
+                    title('Homogeneous, Neumann BCs')                    
                     grid on
                     M(counter) = getframe;
                     hold off              
@@ -162,7 +169,12 @@ switch n
 
             % play movie
             f.Visible = 'on';
+            v = VideoWriter('1b','MPEG-4');
+            v.FrameRate = frate;
+            open(v)
             movie(M,2,frate);
+            writeVideo(v,M)
+            close(v)
       end
     case 2 % heterogeneous case
       % boundary between 2 regions in hetereogeneous case
@@ -266,6 +278,7 @@ switch n
               text(27,0.8,sprintf('c = %.f',c(1,split/dx)))
               text(77,0.8,sprintf('c = %.f',c(1,split/dx+1)))
               ylim([-1 1])
+                    title('Heterogeneous, Mixed BCs')              
               legend({'Displacement','Velocity','Stress'},'Location','southeast')
               grid on
               M(counter) = getframe;
@@ -276,5 +289,10 @@ switch n
 
       % play movie
       f.Visible = 'on';
+      v = VideoWriter('2','MPEG-4');
+      v.FrameRate = frate;
+      open(v)
       movie(M,2,frate);
+      writeVideo(v,M)
+      close(v)
 end

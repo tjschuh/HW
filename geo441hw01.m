@@ -4,13 +4,25 @@ function geo441hw01(n,p)
 % code for HW 1, makes movies of an oscillating string
 % with varying boundary conditions and material properties
 %
+% INPUT:
+%    
 % n       what problem you want to run
 %         1 --> problem 1
 %         2 --> problem 2
-% m       what part of a problem you want to run
+% m       if problem 1, what part of a problem you want to run
 %         1 --> part a
 %         2 --> part b
 %
+% OUTPUT:
+%
+% movie of oscillating string for specific case    
+%    
+% EXAMPLES:
+%
+% geo441hw01(1,1)
+% geo441hw01(1,2)
+% geo441hw01(2,[])   
+%    
 % Originally written by tschuh-at-princeton.edu, 02/02/2022
 % Last modified by tschuh-at-princeton.edu, 02/09/2022
 
@@ -186,26 +198,15 @@ switch n
       end
       u(old,:) = u(cur,:);
 
-      switch p
-          case 1
-            % material properties for [0 60] and (60 100]
-            p = zeros(1,xmax/dx+1);
-            p(1,1:(split/dx)) = 1;
-            p(1,(split/dx+1):end) = 1;
+      % material properties for [0 60] and (60 100]
+      p = zeros(1,xmax/dx+1);
+      p(1,1:(split/dx)) = 1;
+      p(1,(split/dx+1):end) = 1;
 
-            k = zeros(1,xmax/dx+1);
-            k(1,1:(split/dx)) = 1;
-            k(1,(split/dx+1):end) = 1;
-          case 2
-            % material properties for [0 60] and (60 100]
-            p = zeros(1,xmax/dx+1);
-            p(1,1:(split/dx)) = 1;
-            p(1,(split/dx+1):end) = 1;
+      k = zeros(1,xmax/dx+1);
+      k(1,1:(split/dx)) = 1;
+      k(1,(split/dx+1):end) = 4;
 
-            k = zeros(1,xmax/dx+1);
-            k(1,1:(split/dx)) = 1;
-            k(1,(split/dx+1):end) = 4;
-      end
       % wave speed c = sqrt(k/p)
       c = zeros(1,xmax/dx+1);
       c(1,1:(split/dx)) = sqrt(k(1:(split/dx))/p(1:(split/dx)));

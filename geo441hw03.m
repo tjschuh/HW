@@ -1,6 +1,9 @@
 function geo441hw03(n)
-%
-% stuff
+% GEO441HW03(n)
+%    
+% Given a problem number (1,2,3), use the respective finite difference
+% scheme (forward, backward, Crank-Nicolson) to solve the heat equation
+% and plot the temperature profile
 %
 % INPUT:
 %
@@ -14,7 +17,7 @@ function geo441hw03(n)
 % .mp4 file of the movie
 %
 % Originally written by tschuh-at-princeton.edu, 02/17/2022
-% Last modified by tschuh-at-princeton.edu, 02/22/2022
+% Last modified by tschuh-at-princeton.edu, 02/23/2022
 
 % grid size and rod length
 dx = 1; L = 100;
@@ -24,6 +27,8 @@ x = [0:dx:L];
 
 switch n
     case 1 % problem 1 (heterogeneous)
+      fprintf('Working on Problem 1\n')
+
       % define temperature array
       T = zeros(2,length(x));
       old = 1; new = 2;
@@ -96,6 +101,8 @@ switch n
       writeVideo(v,M)
       close(v)
     case 2 % problem 2 (homogeneous only)
+      fprintf('Working on Problem 2\n')
+
       % define temperature array
       Told = zeros(length(x),1);
       Tcur = zeros(length(x),1);
@@ -118,8 +125,8 @@ switch n
       D = max(k)/(min(p)*min(cp));
 
       % timestep and tmax
-      % coeff > 0.5 crashes
-      coeff = 0.4;
+      % coeff > 0.5 does not crash
+      coeff = 0.6;
       dt = coeff*dx*dx/D;
       tmax = 150;
 
@@ -175,6 +182,8 @@ switch n
       writeVideo(v,M)
       close(v)
     case 3 % problem 3 (homogeneous only)
+      fprintf('Working on Problem 3\n')
+
       % define temperature array
       Told = zeros(length(x),1);
       Tcur = zeros(length(x),1);
@@ -197,8 +206,8 @@ switch n
       D = max(k)/(min(p)*min(cp));
 
       % timestep and tmax
-      % coeff > 0.5 crashes
-      coeff = 0.4;
+      % coeff > 0.5 does not crash
+      coeff = 0.45;
       dt = coeff*dx*dx/D;
       tmax = 150;
 

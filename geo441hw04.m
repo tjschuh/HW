@@ -16,7 +16,7 @@ function geo441hw04()
 dx = 0.1;
 
 % string length and max time
-L = 100; tmax = 300;
+L = 100; tmax = 200;
 
 % create actual string
 x = [0:dx:L];
@@ -76,22 +76,22 @@ M(counter) = getframe(gcf);
 hold off
 counter = counter + 1;
 
-multi=grad(x,dx);
-% no propagation, but it works
+grad=gradient(x,dx);
+% no propagation, but it works may need to change : --> n element, but
+% dont know if I can do fft 1 element at a time
 for j=1:tmax
     % compute fft of T and v, multiply by ik
     % shift all elements since fft messes up element order
-    Tf = multi.*fft(T(cur,:));
-    vf = multi.*fft(v(cur,:));
-
     % apply inverse fft to get derivative of T and v
-    iTf = ifft(Tf);
-    ivf = ifft(vf);
-
-    % use that to find T and v at next timestep
-    T(new,:) = T(old,:) + (2*dt.*k(1,:)).*ivf(1,:);
-    v(new,:) = v(old,:) + (2*dt./p(1,:)).*iTf(1,:);
+    iTf = 2*pi*ifft(grad.*fft(T(cur,:)));
+    ivf = 2*pi*ifft(grad.*fft(v(cur,:)));
     
+    % use that to find T and v at next timestep
+    for m=1:length(T)
+        v(new,m) = v(old,m) + (2*dt*iTf(1,m)/p(1,m));
+        T(new,m) = T(old,m) + (2*dt*ivf(1,m)*k(1,m));
+    end
+
     % set old = cur, and cur = new
     T(old,:) = T(cur,:); T(cur,:) = T(new,:);
     v(old,:) = v(cur,:); v(cur,:) = v(new,:);
@@ -120,11 +120,11 @@ movie(M,plays,frate);
 writeVideo(v,M)
 close(v)
 
-function multi=grad(x,dx)
+function grad=gradient(x,dx)
 n=length(x);
-val=(2*pi)/(n*dx);
+val=1/(n*dx);
 N=floor((n-1)/2)+1;
 p1=[0:N-1];
 p2=[-(floor(n/2)):-1];
 results=[p2 p1];
-blu=i*results*val;
+grad=i*results*val;

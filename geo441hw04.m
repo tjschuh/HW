@@ -1,22 +1,32 @@
-function geo441hw04()
-% GEO441HW04()
+function geo441hw04(n)
+% GEO441HW04(n)
 %
 % Creates and saves a movie of an oscillating 1D string with varying
 % boundary conditions and material properties using pseudo-spectral method
 %
 % INPUT:
+%
+% n      problem number
+%        1 --> problem 1
+%        2 --> problem 2
 %    
 % OUTPUT:
 %
 % .mp4 file of the movie
 %    
+% EXAMPLES:
+%
+% geo441hw04(1)
+% geo441hw04(2)
+%
 % Originally written by tschuh-at-princeton.edu, 02/23/2022
+% Last modified by tschuh-at-princeton.edu, 03/02/2022
 
 % grid size and timestep
 dx = 0.1;
 
 % string length and max time
-L = 100; tmax = 200;
+L = 100; tmax = 10000;
 
 % create actual string
 x = [0:dx:L];
@@ -31,13 +41,21 @@ v = zeros(3,L/dx+1);
 % allocate stress array
 T = zeros(3,L/dx+1);
 
-% material properties (homogeneous for now)
-k = ones(1,L/dx+1); p = ones(1,L/dx+1);
+% material properties
+switch n
+    case 1 % homogeneous
+      k = ones(1,L/dx+1); p = ones(1,L/dx+1);
+    case 2 % heterogeneous
+      split = 60;
+      k = ones(1,L/dx+1);
+      k(1,(split/dx+1):end) = 4;
+      p = ones(1,L/dx+1);
+end    
 c = sqrt(k./p);
 
 % timestep
-dt = dx/max(c);
-dt = 0.001;
+%dt = dx/max(c);
+dt = 0.01;
 
 % define each row of displacement grid
 old = 1; cur = 2; new = 3;
@@ -63,9 +81,9 @@ T(old,:) = T(cur,:);
 f=figure;
 f.Visible = 'off';
 counter = 1;
-pint = 5;
+pint = 20;
 plays = 1;
-frate = 15;      
+frate = 12;
 plot(x,v(cur,:),'b','LineWidth',2)
 hold on
 plot(x,T(cur,:),'r','LineWidth',2)
@@ -102,7 +120,11 @@ for j=1:tmax
         hold on
         plot(x,real(T(cur,:)),'r','LineWidth',2)
         ylim([-1 1])
-        title('Homogeneous')
+        if n == 1
+            title('Homogeneous')
+        else
+            title('Heterogeneous')
+        end
         legend('Velocity','Stress')
         grid on
         M(counter) = getframe(gcf);
@@ -113,7 +135,7 @@ end
 
 % play and save movie
 f.Visible = 'on';
-v = VideoWriter('1','MPEG-4');
+v = VideoWriter(sprintf('%i',n),'MPEG-4');
 v.FrameRate = frate;
 open(v)
 movie(M,plays,frate);

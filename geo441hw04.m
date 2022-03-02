@@ -1,7 +1,7 @@
 function geo441hw04(n)
 % GEO441HW04(n)
 %
-% Creates and saves a movie of an oscillating 1D string with varying
+% Creates and saves a movie of an oscillating 1D string with no specified
 % boundary conditions and material properties using pseudo-spectral method
 %
 % INPUT:
@@ -25,7 +25,7 @@ function geo441hw04(n)
 % grid size and timestep
 dx = 0.1;
 
-% string length and max time
+% string length and simulation length
 L = 100; tmax = 10000;
 
 % create actual string
@@ -36,6 +36,7 @@ x = [0:dx:L];
 u = zeros(3,L/dx+1);
 
 % allocate velocity grid
+% v=0 for all space at t=0
 v = zeros(3,L/dx+1);
 
 % allocate stress array
@@ -65,17 +66,11 @@ for j=1:size(u,2)
     u(cur,j) = exp(-0.1*(((j-1)/10) - 50)^2);
 end
 
-% displacements for t = -1 are equal to t = 0 values
-% need this for 1st timestep
-u(old,:) = u(cur,:);
-
 % now compute stress values for t=0 using displacements at t=0
 for j=2:size(T,2)-1
     T(cur,j) = (k(j)/(2*dx))*(u(cur,j+1) - u(cur,j-1));
 end
 T(old,:) = T(cur,:);
-
-% v is always zero at t=0 so we dont need to do any ICs there
 
 % plot t = 0 displacements
 f=figure;
@@ -87,6 +82,12 @@ frate = 12;
 plot(x,v(cur,:),'b','LineWidth',2)
 hold on
 plot(x,T(cur,:),'r','LineWidth',2)
+if n == 1
+    title('Homogeneous')
+else    
+    title('Heterogeneous')
+    xline(split,'--','LineWidth',2)
+end
 ylim([-1 1])
 legend('Velocity','Stress')
 grid on
@@ -94,9 +95,12 @@ M(counter) = getframe(gcf);
 hold off
 counter = counter + 1;
 
+% calculate gradient ik
+% see function at end
 grad=gradient(x,dx);
-% no propagation, but it works may need to change : --> n element, but
-% dont know if I can do fft 1 element at a time
+
+% now actually calculate T and v for subsequent
+% timesteps using pseudo-spectral method
 for j=1:tmax
     % compute fft of T and v, multiply by ik
     % shift all elements since fft messes up element order
@@ -124,6 +128,7 @@ for j=1:tmax
             title('Homogeneous')
         else
             title('Heterogeneous')
+            xline(split,'--','LineWidth',2)
         end
         legend('Velocity','Stress')
         grid on
@@ -142,6 +147,9 @@ movie(M,plays,frate);
 writeVideo(v,M)
 close(v)
 
+% calculate gradient ik: needed because
+% order of elements gets messeded up
+% after fft so this corrects for that
 function grad=gradient(x,dx)
 n=length(x);
 val=1/(n*dx);

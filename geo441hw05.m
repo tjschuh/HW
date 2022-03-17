@@ -1,49 +1,104 @@
-function geo441hw05()
+function geo441hw05(n,f)
+% GEO441HW05(n,f)
 %
-% REQUIRES:
+% simple finite element method (FEM) code for GEO 441 hw 5
 %
-% Symbolic Math Toolbox
+% INPUT:
+%
+% n      number of grid points
+% f      weight in diffusion eqaution, can be any value
 %
 % Originally written by tschuh-at-princeton.edu, 03/15/2022
+% Last modified by tschuh-at-princeton.edu, 03/17/2022
 
-% number of elements
-n = 3;
+% TO-DO:
+% fix calculation of N
+
+% number of elements/cells is one less than grid points
+ne = n - 1;
 
 % string length
 L = 1;
 
-% spatial scale
-dx = 1/(n-1);
-
 % create grid
-x = 0:dx:L;
+x = linspace(0,L,ne+1);
 
-% for i=1:length(x)
-%     if x(i) < dx
-%         N1(i) = 1 - 2*x(i);
-%         N2(i) = 2*x(i);
-%         N3(i) = 0;
-%     else
-%         N1(i) = 0;
-%         N2(i) = 2*(1 - x(i));
-%         N3(i) = 2*x(i) - 1;
-%     end
-% end
+% spacing (doesnt need to be constant)
+dx = zeros(1,ne);
+for i=1:ne
+    dx(i) = x(i+1) - x(i);
+end
 
-syms x
-N1A = 1 - 2*x;
-N1B = 0;
-N2A = 2*x;
-N2B = 2*(1 - x);
-N3A = 0;
-N3B = 2*x - 1;
+% BCs
+q0 = 1; T1 = 1;
 
-N = [N1A N1B; N2A N2B; N3A N3B];
+% calculate shape functions
+% need to do this properly depsite
+% it ending up being identity matrix
+N = zeros(ne+1,ne+1);
+for i=1:ne+1
+    if x(i) < x(2)
+        N(1,i) = (x(2)-x(i))/dx(i);
+    end
+end    
 
-for j=1:n-1
-    for k=1:n-1
-        K(j,k) = (1/2)*diff(N(j,1))*diff(N(k,1)) + (1/2)*diff(N(j,2))*diff(N(k,2));
+N = eye(ne+1);
+
+% calculate stiffness matrix K
+for i=1:ne
+    for j=1:ne
+        if i == j
+            if i ~= 1
+                K(i,j) = (1/dx(i-1)) + (1/dx(i));
+            else
+                K(i,j) = 1/dx(i);
+            end
+        elseif abs(i-j) == 1
+            K(i,j) = -1/dx(i);
+        else
+            K(i,j) = 0;
+        end
     end
 end
 
-keyboard
+% calculate F
+for i=1:ne
+    if i == 1
+        F(i,1) = q0*N(i,1);
+    elseif i > 1 && i < ne
+        F(i,1) = 0;
+    else
+        F(i,1) = q0*N(i,1) - ((N(i,i+1)-N(i,i))/dx(i))*((N(end,end)-N(end,end-1))/dx(end))*dx(i)*T1;
+    end
+
+    if i == 1 || i == ne
+        F(i,1) = F(i,1) + (1/2)*dx(i)*sum(N(i,:))*f;
+    else
+        F(i,1) = F(i,1) + (1/2)*dx(i)*sum(N(i,:))*f + (1/2)*dx(i+1)*sum(N(i,:))*f;
+    end
+end
+
+% calculate d
+d = K\F;
+
+% calculate T
+for i=1:ne+1
+    T(1,i) = sum(d.*N(1:ne,i)) + T1*N(ne+1,i);
+end
+
+% compare to exact solution
+Tex = T1 + (1 - x).*q0 + (1/2).*(1 - x.^2).*f;
+
+% plotting
+p1=plot(x,T,'-b','LineWidth',2);
+hold on
+scatter(x,T,50,'b','filled')
+p2=plot(x,Tex,'--r','LineWidth',2);
+scatter(x,Tex,'r','filled')
+hold off
+longticks([],2)
+grid on
+xlabel('x')
+ylabel('temperature')
+title(sprintf('1D steady-state diffusion equation\nnumber of elements = %d, f = %d',n,f))
+legend([p1 p2],{'FEM','EXACT'})

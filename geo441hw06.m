@@ -11,7 +11,7 @@ n = 10;
 ne = n - 1;
 
 % string length
-L = 1;
+L = pi/2;
 
 % create grid
 x = linspace(0,L,ne+1);
@@ -26,7 +26,10 @@ end
 p = 1; cp = 1; kap = 1;
 
 % BCs
-q0 = 1; T1 = 1; f = 0;
+q0 = 0; T1 = 1;
+
+% force term
+f = 0;
 
 % Crank-Nicolson scheme
 alpha = 0.5;
@@ -92,17 +95,17 @@ end
 dt = 0.1;
 tmax = 10;
 
-% set up initial condition to get d0
-% this will be given
-d0 = ones(ne,1);
-
+% use given initial condition to get d0
+d0 = 1 + cos(x);
+keyboard
+% d0 and K are not same length!
 % solve for v0 using d0, M, K, and F
-v0 = M\(F-K*d0);
+v0 = M\(F-K*d0');
 
 d = zeros(ne,tmax);
 v = zeros(ne,tmax);
 
-d(:,1) = d0;
+d(:,1) = d0';
 v(:,1) = v0;
 
 dtil = zeros(ne,tmax);
@@ -118,6 +121,11 @@ for j = 1:tmax
     
     % correction of displacement
     d(:,j+1) = dtil(:,j+1) + alpha*dt*v(:,j+1);
+end
+
+% compare against exact solution
+for i=1:tmax
+    Tex(i,:) = 1 + exp(-i)*cos(x);
 end
 
 keyboard

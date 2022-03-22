@@ -5,7 +5,7 @@ function geo441hw06()
 % Last modified by tschuh-at-princeton.edu, 03/21/2022
 
 % number of grid points
-n = 10;
+n = 11;
 
 % number of elements/cells
 ne = n - 1;
@@ -36,11 +36,11 @@ alpha = 0.5;
 
 N = zeros(2,2);
 m = zeros(2,2);
-M = zeros(ne,ne);
+M = zeros(ne+1,ne+1);
 k = zeros(2,2);
-K = zeros(ne,ne);
+K = zeros(ne+1,ne+1);
 fe = zeros(2,1);
-F = zeros(ne,1);
+F = zeros(ne+1,1);
 for i=1:ne
     xA = x(i); xA1 = x(i+1);
     for j=1:2
@@ -72,6 +72,7 @@ for i=1:ne
                 fe(j,1) = (dx(i)*f/2) + q0*N(j,1);
             elseif i == ne
                 % this might need to be a + sign
+                % might need to add one more element like Will did, then delete it
                 fe(j,1) = (dx(i)*f/2) - T1*k(j,2);
             else
                 fe = (dx(i)*f/2).*[1; 1];
@@ -79,53 +80,61 @@ for i=1:ne
         end
     end
     % now assemble!
-    if i ~= ne
+    %if i ~= ne
         M(i:i+1,i:i+1) = M(i:i+1,i:i+1) + m;
         K(i:i+1,i:i+1) = K(i:i+1,i:i+1) + k;
-        F(i:i+1,1) = F(i:i+1,1) + fe;
-    else
-        M(i,i) = M(i,i) + m(2,2);
-        K(i,i) = K(i,i) + k(2,2);
-        F(i,1) = F(i,1) + fe(2,1);
-    end
+        %if i ~= ne
+            F(i:i+1,1) = F(i:i+1,1) + fe;
+            %else
+        %M(i,i) = M(i,i) + m(2,2);
+        %K(i,i) = K(i,i) + k(2,2);
+        %F(i,1) = F(i,1) + fe(2,1);
+        %end
 end
+
+% fix F so its 0 except last element
+F(end) = 6.3662;
+F(end-1) = 0;
 
 % now actually perform finite element algorithm
 % choose dt and tmax (move to top)
-dt = 0.1;
+% d = T
+dt = 0.01;
 tmax = 10;
 
 % use given initial condition to get d0
 d0 = 1 + cos(x);
-keyboard
+
 % d0 and K are not same length!
 % solve for v0 using d0, M, K, and F
 v0 = M\(F-K*d0');
+%v0 = zeros(ne+1,1);
 
-d = zeros(ne,tmax);
-v = zeros(ne,tmax);
+d = zeros(tmax,ne+1);
+v = zeros(tmax,ne+1);
 
-d(:,1) = d0';
-v(:,1) = v0;
+d(1,:) = d0;
+v(1,:) = v0';
 
-dtil = zeros(ne,tmax);
-% change i <--> j to be clean
+dtil = zeros(tmax,ne+1);
+keyboard
 % change last element bc boundary is weird
-for j = 1:tmax
-    for i = 1:ne
-        % prediction of displacement
-        dtil(i,j+1) = d(i,j) + (1-alpha)*dt*v(i,j);
-    end
+for i=1:tmax-1
+    % prediction of displacement
+    dtil(i+1,:) = d(i,:) + (1-alpha)*dt*v(i,:);
+    keyboard
     % computation of velocity
-    v(:,j+1) = (M + alpha*dt.*K)\(F - K*dtil(:,j+1));
+    %v(i+1,:) = (M + alpha*dt.*K)\(F - K*dtil(i+1,:)');
+    v(i+1,1:end-1) = (M(1:end-1,1:end-1) + alpha*dt.*K(1:end-1,1:end-1))\(F(1:end-1,1) - K(1:end-1,1:end-1)*dtil(i+1,1:end-1)');
     
     % correction of displacement
-    d(:,j+1) = dtil(:,j+1) + alpha*dt*v(:,j+1);
+    d(i+1,:) = dtil(i+1,:) + alpha*dt.*v(i+1,:);
+    keyboard
 end
 
 % compare against exact solution
-for i=1:tmax
-    Tex(i,:) = 1 + exp(-i)*cos(x);
+for i=0:tmax-1
+    Tex(i+1,:) = 1 + exp(-i*dt)*cos(x);
 end
 
 keyboard

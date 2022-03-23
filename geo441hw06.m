@@ -5,7 +5,7 @@ function geo441hw06()
 % Last modified by tschuh-at-princeton.edu, 03/23/2022
 
 % number of grid points
-n = 11;
+n = 10;
 
 % number of elements/cells
 ne = n - 1;
@@ -21,6 +21,9 @@ dx = zeros(1,ne);
 for i=1:ne
     dx(i) = x(i+1) - x(i);
 end
+
+% timestep and simulation length
+dt = 0.01; tmax = 200;
 
 % material properties
 p = 1; cp = 1; kap = 1;
@@ -86,14 +89,8 @@ for i=1:ne
 end
 
 % now actually perform finite element algorithm
-% choose dt and tmax (move to top)
-% d = T
-% change how time marching is done by copying older hw and using dold and
-% dnew, and dtilold and dtilnew
-dt = 0.01;
-tmax = 10;
-
 % use given initial condition to get d0
+% d = T
 d0 = 1 + cos(x);
 
 % solve for v0 using d0, M, K, and F
@@ -104,25 +101,82 @@ v0 = (M(1:end-1,1:end-1)+alpha*dt.*K(1:end-1,1:end-1))\(F(1:end-1,1)-K(1:end-1,1
 d = zeros(tmax,ne+1);
 v = zeros(tmax,ne+1);
 
-d(1,:) = d0;
-v(1,1:end-1) = v0';
+d = zeros(2,ne+1);
+dtil = zeros(1,ne+1);
+v = zeros(2,ne+1);
 
-dtil = zeros(tmax,ne+1);
+old = 1; new = 2;
+
+d(old,:) = d0;
+v(old,1:end-1) = v0';
+
+Tex(1,:) = 1 + cos(x);
+
+% initial plotting
+% add title with n and scatter plot
+f=figure;
+f.Visible = 'off';
+counter = 1;
+pint = 5;
+plays = 1;
+frate = 4;
+sz = 50;
+p1=plot(x,d(old,:),'-b','LineWidth',2);
+hold on
+scatter(x,d(old,:),sz,'b','filled')
+p2=plot(x,Tex(1,:),'--r','LineWidth',2);
+scatter(x,Tex(1,:),sz,'r','filled')
+title(sprintf('1D unsteady-state diffusion equation\nnumber of grid points = %d',n))
+xlabel('x')
+ylabel('temperature')
+ylim([1 2])
+legend([p1 p2],{'FEM','EXACT'})
+grid on
+GF(counter) = getframe(gcf);
+hold off
+counter = counter + 1;
+
 % ignored last element bc T=1 at boundary
-for i=1:tmax-1
+for i=1:tmax
     % prediction of displacement
-    dtil(i+1,:) = d(i,:) + (1-alpha)*dt*v(i,:);
+    dtil(1,:) = d(old,:) + (1-alpha)*dt*v(old,:);
 
     % computation of velocity
-    v(i+1,1:end-1) = (M(1:end-1,1:end-1) + alpha*dt.*K(1:end-1,1:end-1))\(F(1:end-1,1) - K(1:end-1,1:end-1)*dtil(i+1,1:end-1)');
+    v(new,1:end-1) = (M(1:end-1,1:end-1) + alpha*dt.*K(1:end-1,1:end-1))\(F(1:end-1,1) - K(1:end-1,1:end-1)*dtil(1,1:end-1)');
     
     % correction of displacement
-    d(i+1,:) = dtil(i+1,:) + alpha*dt.*v(i+1,:);
+    d(new,:) = dtil(1,:) + alpha*dt.*v(new,:);
+
+    % compare against exact solution
+    Tex(1,:) = 1 + exp(-i*dt)*cos(x);
+
+    d(old,:) = d(new,:);
+    v(old,:) = v(new,:);
+
+    % plotting
+    if mod(i,pint-1) == 0
+        p1=plot(x,d(old,:),'-b','LineWidth',2);
+        hold on
+        scatter(x,d(old,:),sz,'b','filled')
+        p2=plot(x,Tex(1,:),'--r','LineWidth',2);
+        scatter(x,Tex(1,:),sz,'r','filled')
+        title(sprintf('1D unsteady-state diffusion equation\nnumber of grid points = %d',n))
+        xlabel('x')
+        ylabel('temperature')
+        ylim([1 2])
+        legend([p1 p2],{'FEM','EXACT'})
+        grid on
+        GF(counter) = getframe(gcf);
+        hold off
+        counter = counter + 1;
+    end
 end
 
-% compare against exact solution
-for i=0:tmax-1
-    Tex(i+1,:) = 1 + exp(-i*dt)*cos(x);
-end
-
-keyboard
+% play and save movie
+f.Visible = 'on';
+v = VideoWriter(sprintf('a'),'MPEG-4');
+v.FrameRate = frate;
+open(v)
+movie(GF,plays,frate);
+writeVideo(v,GF)
+close(v)

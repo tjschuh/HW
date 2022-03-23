@@ -2,7 +2,7 @@ function geo441hw06()
 %
 %
 % Originally written by tschuh-at-princeton.edu, 03/18/2022
-% Last modified by tschuh-at-princeton.edu, 03/21/2022
+% Last modified by tschuh-at-princeton.edu, 03/23/2022
 
 % number of grid points
 n = 11;
@@ -71,8 +71,6 @@ for i=1:ne
             if i == 1
                 fe(j,1) = (dx(i)*f/2) + q0*N(j,1);
             elseif i == ne
-                % this might need to be a + sign
-                % might need to add one more element like Will did, then delete it
                 fe(j,1) = (dx(i)*f/2) - T1*k(j,2);
             else
                 fe = (dx(i)*f/2).*[1; 1];
@@ -80,56 +78,46 @@ for i=1:ne
         end
     end
     % now assemble!
-    %if i ~= ne
-        M(i:i+1,i:i+1) = M(i:i+1,i:i+1) + m;
-        K(i:i+1,i:i+1) = K(i:i+1,i:i+1) + k;
-        %if i ~= ne
-            F(i:i+1,1) = F(i:i+1,1) + fe;
-            %else
-        %M(i,i) = M(i,i) + m(2,2);
-        %K(i,i) = K(i,i) + k(2,2);
-        %F(i,1) = F(i,1) + fe(2,1);
-        %end
+    M(i:i+1,i:i+1) = M(i:i+1,i:i+1) + m;
+    K(i:i+1,i:i+1) = K(i:i+1,i:i+1) + k;
+    % last element of F will be nonzero, but we only care
+    % about elements 1:end-1 since F has elements ne+1
+    F(i:i+1,1) = F(i:i+1,1) + fe;
 end
-
-% fix F so its 0 except last element
-F(end) = 6.3662;
-F(end-1) = 0;
 
 % now actually perform finite element algorithm
 % choose dt and tmax (move to top)
 % d = T
+% change how time marching is done by copying older hw and using dold and
+% dnew, and dtilold and dtilnew
 dt = 0.01;
 tmax = 10;
 
 % use given initial condition to get d0
 d0 = 1 + cos(x);
 
-% d0 and K are not same length!
 % solve for v0 using d0, M, K, and F
-v0 = M\(F-K*d0');
-%v0 = zeros(ne+1,1);
+% but only use elements up to last bc we want
+% to keep T=1 at boundary
+v0 = (M(1:end-1,1:end-1)+alpha*dt.*K(1:end-1,1:end-1))\(F(1:end-1,1)-K(1:end-1,1:end-1)*d0(1,1:end-1)');
 
 d = zeros(tmax,ne+1);
 v = zeros(tmax,ne+1);
 
 d(1,:) = d0;
-v(1,:) = v0';
+v(1,1:end-1) = v0';
 
 dtil = zeros(tmax,ne+1);
-keyboard
-% change last element bc boundary is weird
+% ignored last element bc T=1 at boundary
 for i=1:tmax-1
     % prediction of displacement
     dtil(i+1,:) = d(i,:) + (1-alpha)*dt*v(i,:);
-    keyboard
+
     % computation of velocity
-    %v(i+1,:) = (M + alpha*dt.*K)\(F - K*dtil(i+1,:)');
     v(i+1,1:end-1) = (M(1:end-1,1:end-1) + alpha*dt.*K(1:end-1,1:end-1))\(F(1:end-1,1) - K(1:end-1,1:end-1)*dtil(i+1,1:end-1)');
     
     % correction of displacement
     d(i+1,:) = dtil(i+1,:) + alpha*dt.*v(i+1,:);
-    keyboard
 end
 
 % compare against exact solution

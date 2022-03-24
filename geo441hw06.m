@@ -1,17 +1,54 @@
-function geo441hw06()
+function geo441hw06(prob,n)
+% GEO441HW06(prob,n)
 %
+% Creates and saves a movie file of Finite Element Method
+% (FEM) solution of 1d unsteady-state diffusion equation
+%
+% INPUT:
+%
+% prob     which problem you want to solve [a or b]
+% n        number of grid points in your FEM scheme
+%
+% OUTPUT:
+%
+% .mp4 movie file
+%
+% EXAMPLE:
+%
+% geo441hw06('a',10)
 %
 % Originally written by tschuh-at-princeton.edu, 03/18/2022
 % Last modified by tschuh-at-princeton.edu, 03/23/2022
 
-% number of grid points
-n = 10;
-
 % number of elements/cells
 ne = n - 1;
 
-% string length
-L = pi/2;
+switch prob
+    case 'a'
+      fprintf('Solving Problem a...\n')
+      % spatial length
+      L = pi/2;
+      % material properties
+      p = 1; cp = 1; kap = 1;
+      % BCs
+      q0 = 0; T1 = 1;
+      % force term
+      f = 0;
+      % timestep and simulation length
+      dt = 0.01; tmax = 200;
+      % Crank-Nicolson scheme
+      alpha = 0.5;
+    case 'b'
+      fprintf('Solving Problem b...\n')
+      L = 20;
+      p = 1; cp = 1; kap = 1;
+      q0 = 0; T1 = 0;
+      f = 0;
+      dt = 0.01; tmax = 200;
+      alpha = 0.5;
+    otherwise
+      error('Please enter a valid problem (a or b)')
+end
 
 % create grid
 x = linspace(0,L,ne+1);
@@ -21,21 +58,6 @@ dx = zeros(1,ne);
 for i=1:ne
     dx(i) = x(i+1) - x(i);
 end
-
-% timestep and simulation length
-dt = 0.01; tmax = 200;
-
-% material properties
-p = 1; cp = 1; kap = 1;
-
-% BCs
-q0 = 0; T1 = 1;
-
-% force term
-f = 0;
-
-% Crank-Nicolson scheme
-alpha = 0.5;
 
 N = zeros(2,2);
 m = zeros(2,2);
@@ -91,7 +113,12 @@ end
 % now actually perform finite element algorithm
 % use given initial condition to get d0
 % d = T
-d0 = 1 + cos(x);
+switch prob
+    case 'a'
+      d0 = 1 + cos(x);
+    case 'b'
+      d0 = [ones(1,length(x)-1) T1];
+end
 
 % solve for v0 using d0, M, K, and F
 % but only use elements up to last bc we want
@@ -110,10 +137,15 @@ old = 1; new = 2;
 d(old,:) = d0;
 v(old,1:end-1) = v0';
 
-Tex(1,:) = 1 + cos(x);
-
+switch prob
+    case 'a'
+      Tex(1,:) = 1 + cos(x);
+    case 'b'
+      % erfc(t=0) = erfc(inf) = 0
+      Tex(1,:) = zeros(1,length(x));
+end
+      
 % initial plotting
-% add title with n and scatter plot
 f=figure;
 f.Visible = 'off';
 counter = 1;
@@ -126,10 +158,15 @@ hold on
 scatter(x,d(old,:),sz,'b','filled')
 p2=plot(x,Tex(1,:),'--r','LineWidth',2);
 scatter(x,Tex(1,:),sz,'r','filled')
-title(sprintf('1D unsteady-state diffusion equation\nnumber of grid points = %d',n))
+title(sprintf('1D unsteady-state diffusion equation\nnumber of grid points = %d, problem %s',n,prob))
 xlabel('x')
 ylabel('temperature')
-ylim([1 2])
+switch prob
+    case 'a'
+      ylim([1 2])
+    case 'b'
+      ylim([0 1.2])
+end
 legend([p1 p2],{'FEM','EXACT'})
 grid on
 GF(counter) = getframe(gcf);
@@ -148,8 +185,13 @@ for i=1:tmax
     d(new,:) = dtil(1,:) + alpha*dt.*v(new,:);
 
     % compare against exact solution
-    Tex(1,:) = 1 + exp(-i*dt)*cos(x);
-
+    switch prob
+        case 'a'
+          Tex(1,:) = 1 + exp(-i*dt)*cos(x);
+        case 'b'
+          Tex(1,:) = erfc(x./(2*sqrt((kap*i*dt)/(p*cp))));
+    end
+          
     d(old,:) = d(new,:);
     v(old,:) = v(new,:);
 
@@ -160,10 +202,16 @@ for i=1:tmax
         scatter(x,d(old,:),sz,'b','filled')
         p2=plot(x,Tex(1,:),'--r','LineWidth',2);
         scatter(x,Tex(1,:),sz,'r','filled')
-        title(sprintf('1D unsteady-state diffusion equation\nnumber of grid points = %d',n))
+        title(sprintf('1D unsteady-state diffusion equation\nnumber of grid points = %d, problem %s',n,prob))
         xlabel('x')
         ylabel('temperature')
-        ylim([1 2])
+        %ylim([1 2])
+        switch prob
+          case 'a'
+            ylim([1 2])
+          case 'b'
+            ylim([0 1.2])
+        end
         legend([p1 p2],{'FEM','EXACT'})
         grid on
         GF(counter) = getframe(gcf);
@@ -174,7 +222,7 @@ end
 
 % play and save movie
 f.Visible = 'on';
-v = VideoWriter(sprintf('a'),'MPEG-4');
+v = VideoWriter(sprintf('problem-%s',prob),'MPEG-4');
 v.FrameRate = frate;
 open(v)
 movie(GF,plays,frate);

@@ -2,7 +2,7 @@ function geo441hw06(prob,n)
 % GEO441HW06(prob,n)
 %
 % Creates and saves a movie file of Finite Element Method
-% (FEM) solution of 1d unsteady-state diffusion equation
+% (FEM) solution of 1d UNsteady-state diffusion equation
 %
 % INPUT:
 %
